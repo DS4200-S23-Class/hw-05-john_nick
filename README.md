@@ -1,7 +1,7 @@
 # hw-05
 hw-05 - Binding Data
 
-Link to GitHub Pages: `[insert your clickable hyperlink here]`
+Link to GitHub Pages: `[https://ds4200-s23-class.github.io/hw-05-john_nick/]`
 
 Clone this repo and work locally. Be sure to push the final version of your code (and any significant updates along the way) before submitting. To work locally, you will need to set up a Python Simple Server. Instructions for this are included below.  
 
