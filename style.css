@@ -29,3 +29,14 @@ h1, h2 {
     flex:40%;
     /*justify-content: none;*/
 }
+
+.tooltip{
+    position:absolute;
+    background-color: grey;
+    border: solid;
+    padding: 5px;
+}
+
+.point {
+    fill: rgb(177, 41, 177);
+  }
