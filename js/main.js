@@ -48,12 +48,10 @@ function build_interactive_plot() {
           .attr("class", "point");
 
 
+
     // Define event handler functions for mouseover event
     function handleMouseover(event, d) {
-      
-        // Highlight Point on Mouseover 
-      TOOLTIP.style("opacity", 1); 
-      
+        console.log(d)
     }
 
     // function handleMousemove(event, d) {
@@ -71,7 +69,7 @@ function build_interactive_plot() {
 
     // Add event listeners
     FRAME1.selectAll(".point")
-          .on("mouseover", handleMouseover) //add event listeners
+          .on("mouseover", handleMouseover) 
         //   .on("mousemove", handleMousemove)
         //   .on("mouseleave", handleMouseleave);    
 
