@@ -14,13 +14,62 @@ const FRAME1 = d3.select("#Scatterplot")
                   .append("svg")
                     .attr("height", FRAME_HEIGHT)
                     .attr("width", FRAME_WIDTH)
-                    .attr("class", "frame"); 
+                    .attr('id', 'spsvg')
+                    .attr("class", "frame");
 
+// tracks new points.
+let new_points = []
 
-function build_scatter_plot() {
+// adds new point to the graph
+function new_point(){
+  // reset graph if new points are being added
+  document.getElementById("spsvg").innerHTML = '';
+  d3.csv("data/scatter-data.csv").then((data) => {
+    // get data from page
+    let x_ele = document.getElementById('x_select');
+    let y_ele = document.getElementById('y_select');
+    // create new point in json
+    new_points.push({x:x_ele.options[x_ele.selectedIndex].text, y:y_ele.options[y_ele.selectedIndex].text});
+    let old_len = data.length;
+    // update data list
+    for (let i=0; i< new_points.length; i++)
+    {
+      data[old_len+i] = new_points[i];
+    }
+    // reconstruct graph with new data
+    build_scatter_plot(true, data);
+  });
+}
+function build_scatter_plot(addpoints, newdata) {
 
   d3.csv("data/scatter-data.csv").then((data) => {
 
+    // fix new points into data if they were passed.
+    if (addpoints){data=newdata;}
+
+    // highlight point
+    let mouseover = function(event, d) {
+      d3.select(this)
+          .style("fill", "orange");
+    }
+
+    // changes text to last point, and sets border depending on whether or not it is already present
+    let mousedown = function(e, d) {
+      if (e.target.getAttribute('stroke')==='black') {
+        e.target
+            .setAttribute("stroke", "none");
+      }else {
+        e.target
+            .setAttribute("stroke", "black");
+      }
+      document.getElementById('point').textContent = `Last clicked point.. (${d['x']},${d['y']})`;
+    }
+
+    // resets point back to original color
+    let mouseleave = function(event, d) {
+      d3.select(this)
+          .style("fill", "rgb(177, 41, 177)");
+    }
     // find max X from the data 
     const MAX_X1 = d3.max(data, (d) => { return parseInt(d.x); });
     
@@ -45,33 +94,10 @@ function build_scatter_plot() {
           .attr("cx", (d) => { return (X_SCALE1(d.x) + MARGINS.left); }) 
           .attr("cy", (d) => { return (Y_SCALE1(d.y) + MARGINS.left); }) 
           .attr("r", 8)
-          .attr("class", "point");
-
-
-
-    // Define event handler functions for mouseover event
-    function handleMouseover(event, d) {
-        console.log(d)
-    }
-
-    // function handleMousemove(event, d) {
-    //   // position the tooltip and fill in information 
-    //   TOOLTIP.html("Name: " + d.name + "<br>Value: " + d.x)
-    //           .style("left", (event.pageX + 10) + "px") //add offset
-    //                                                       // from mouse
-    //           .style("top", (event.pageY - 50) + "px"); 
-    // }
-
-    // function handleMouseleave(event, d) {
-    //   // on mouseleave, make transparant again 
-    //   TOOLTIP.style("opacity", 0); 
-    // } 
-
-    // Add event listeners
-    FRAME1.selectAll(".point")
-          .on("mouseover", handleMouseover) 
-        //   .on("mousemove", handleMousemove)
-        //   .on("mouseleave", handleMouseleave);    
+          .attr("class", "point")
+          .on("mouseover", mouseover)
+          .on("mousedown", mousedown)
+          .on("mouseleave", mouseleave);
 
     // Adds an X axis to the scatter plot
     FRAME1.append("g") 
@@ -101,7 +127,45 @@ function build_bar_plot() {
 
   d3.csv("data/bar-data.csv").then((data) => {
 
-    var categories = data.map(function(value) { return value.category; });
+    let categories = data.map(function(value) { return value.category; });
+    // creates a tooltip
+    let Tooltip = d3.select("#Barplot")
+        .append("div")
+        .style("opacity", 0)
+        .attr("class", "tooltip")
+        .style("background-color", "white")
+        .style("border", "solid")
+        .style("border-width", "2px")
+        .style("border-radius", "5px")
+        .style("padding", "5px");
+
+    // mouseover activates the tooltip to be seen
+    let mouseover = function(d) {
+      Tooltip
+          .style("opacity", 1);
+      d3.select(this)
+          .style("stroke", "black")
+          .style("opacity", 1)
+          .style("fill", "orange");
+    }
+
+    // mousemove keeps the tooltip next to the mouse
+    let mousemove = function(event, d) {
+      Tooltip
+          .html("Value of bar: " + d.amount.toString())
+          .style("left", (d3.pointer(event)[0]+50) + "px")
+          .style("top", (d3.pointer(event)[1]+555) + "px");
+    }
+
+    // mouseleave makes tooltip transparent when outside a bar.
+    let mouseleave = function(d) {
+      Tooltip
+          .style("opacity", 0);
+      d3.select(this)
+          .style("stroke", "none")
+          .style("opacity", 0.8)
+          .style("fill", "blue");
+    }
 
     // Creates the scale function using data
     const X_SCALE2 = d3.scaleBand()
@@ -127,7 +191,10 @@ function build_bar_plot() {
         .attr("y", (d) => { return Y_SCALE2(d.amount); }) 
         .attr("width", X_SCALE2.bandwidth())
         .attr("height", (d) => { return (VIS_HEIGHT - Y_SCALE2(d.amount)); })
-        .attr("fill", 'Blue');
+        .attr("fill", 'Blue')
+        .on("mouseover", mouseover)
+        .on("mousemove", mousemove)
+        .on("mouseleave", mouseleave);
 
 
     FRAME2.append("g")
@@ -138,15 +205,11 @@ function build_bar_plot() {
       .attr("transform", "translate(" + MARGINS.left + 
       "," + 0 + ")") 
         .call(d3.axisLeft(Y_SCALE2));
- 
-
-
-
   });
 }     
 
 // Call function 
-build_scatter_plot();
+build_scatter_plot(false, []);
 build_bar_plot();
 
 
