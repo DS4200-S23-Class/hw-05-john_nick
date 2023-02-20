@@ -17,7 +17,7 @@ const FRAME1 = d3.select("#Scatterplot")
                     .attr("class", "frame"); 
 
 
-function build_interactive_plot() {
+function build_scatter_plot() {
 
   d3.csv("data/scatter-data.csv").then((data) => {
 
@@ -91,8 +91,62 @@ function build_interactive_plot() {
   });
 }
 
-// Call function 
-build_interactive_plot();
+const FRAME2 = d3.select("#Barplot")
+                  .append("svg")
+                    .attr("height", FRAME_HEIGHT)
+                    .attr("width", FRAME_WIDTH)
+                    .attr("class", "frame"); 
 
+function build_bar_plot() {
+
+  d3.csv("data/bar-data.csv").then((data) => {
+
+    var categories = data.map(function(value) { return value.category; });
+
+    // Creates the scale function using data
+    const X_SCALE2 = d3.scaleBand()
+                      .domain(categories)
+                      .range([MARGINS.left, VIS_WIDTH])
+                      .padding(0.2);
+                      
+    // find max Y from the data 
+    const MAX_Y2 = d3.max(data, (d) => { return parseInt(d.amount); })
+                      
+    // Creates the scale function using data
+    const Y_SCALE2 = d3.scaleLinear() 
+                        .domain([0, MAX_Y2]) 
+                        .range([VIS_HEIGHT, 0]); 
+
+    // Plot Points using the X scale created above
+    FRAME2.selectAll("bar")  
+        .data(data)  
+        .enter()       
+        .append("rect")  
+        .attr("class", "bar")
+        .attr("x", (d) => { return X_SCALE2(d.category); }) 
+        .attr("y", (d) => { return Y_SCALE2(d.amount); }) 
+        .attr("width", X_SCALE2.bandwidth())
+        .attr("height", (d) => { return (VIS_HEIGHT - Y_SCALE2(d.amount)); })
+        .attr("fill", 'Blue');
+
+
+    FRAME2.append("g")
+        .attr("transform", "translate(0," + VIS_HEIGHT + ")")
+        .call(d3.axisBottom(X_SCALE2));
+
+      FRAME2.append("g")
+      .attr("transform", "translate(" + MARGINS.left + 
+      "," + 0 + ")") 
+        .call(d3.axisLeft(Y_SCALE2));
+ 
+
+
+
+  });
+}     
+
+// Call function 
+build_scatter_plot();
+build_bar_plot();
 
 
